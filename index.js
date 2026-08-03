@@ -17,6 +17,7 @@ const microsoftStoreCommand = require('./microsoftStoreCommand.js')
 const rankCommand = require('./rankCommand.js')
 const rolesCommand = require('./rolesCommand.js')
 const searchCommand = require('./searchCommand.js')
+const signupCommand = require('./signupCommand.js')
 const usersCommand = require('./usersCommand.js')
 const zapierHooksCommand = require('./zapierHooksCommand.js')
 const packageJson = require('./package.json')
@@ -31,6 +32,9 @@ program
     'appskyline cli — manage apps, keywords, and check app store rankings',
   )
   .version(packageJson.version)
+  // `signup` comes first because it is the only step an agent could not do on
+  // its own: `login` presumes an account already exists.
+  .addCommand(signupCommand())
   .addCommand(
     loginCommand({
       binaryName: BINARY_NAME,

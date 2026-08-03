@@ -32,6 +32,23 @@ Found 2 app(s):
 ✓ com.example.pos ranks #6 of 25 for "restaurant pos" on google-play (US)  (Example POS)
 ```
 
+## Signing up
+
+No account yet? Create one from the terminal — the generated password prints
+exactly once, and the session is stored so every other command works
+immediately:
+
+```bash
+appskyline signup --email founder@example.com --json
+```
+
+Pass `--password` to choose your own (it is never echoed back), and
+`--first-name` / `--last-name` to override the names derived from the email
+address. Without `--email` in an interactive terminal the CLI asks for one;
+without a terminal it fails fast with exit code 1 rather than hanging on a
+prompt. If the address already has an account, the error says so — run
+`appskyline login` instead.
+
 ## Authentication
 
 Two ways in; both persist in `~/.appskyline/`:
@@ -77,6 +94,7 @@ Wherever a store is named, four values are accepted:
 ### Session
 
 ```bash
+appskyline signup --email you@example.com   # create an account and log in
 appskyline login               # interactive: choose browser or API key
 appskyline login --browser     # log in via browser; tokens land in ~/.appskyline/
 appskyline login --with-key    # masked prompt for an API key secret
