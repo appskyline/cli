@@ -1,7 +1,7 @@
 /* Copyright 2013 - 2024 Waiterio LLC */
 const commander = require('commander')
+const { withJson, printJson, fail } = require('@monorepool/agentfirst/output.js')
 const api = require('./request.js')
-const { printJson } = require('./formatOutput.js')
 
 const STORE_PATHS = {
   'ios-app-store': '/api/ios-app-store/search',
@@ -33,7 +33,7 @@ function buildSearchSubcommand(store) {
   cmd.option('--country <country>', 'country code (e.g. US, IT)')
   cmd.option('--lang <lang>', 'language code (e.g. en, it)')
   cmd.option('-n, --num <num>', 'number of results', '10')
-  cmd.option('--json', 'print raw JSON response')
+  withJson(cmd)
   cmd.action(async options => {
     try {
       const params = new URLSearchParams({
@@ -52,8 +52,7 @@ function buildSearchSubcommand(store) {
 
       printResults(results)
     } catch (error) {
-      console.error('error', error.message)
-      process.exitCode = 1
+      fail(error, { json: options.json })
     }
   })
   return cmd

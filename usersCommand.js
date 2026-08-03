@@ -1,23 +1,23 @@
 /* Copyright 2013 - 2024 Waiterio LLC */
 const commander = require('commander')
+const { withJson, printJson, fail } = require('@monorepool/agentfirst/output.js')
 const api = require('./request.js')
-const { printJson } = require('./formatOutput.js')
+const { printInspect } = require('./formatOutput.js')
 
 function usersCommand() {
   const command = new commander.Command('users')
   command.description('list users in the current organization')
 
-  command
-    .command('list')
-    .description('list users')
-    .option('--json', 'print raw JSON response')
-    .action(async options => {
+  withJson(command.command('list').description('list users')).action(
+    async options => {
       try {
         const users = await api.get('/api/users')
+
         if (options.json) {
           printJson(users)
           return
         }
+
         if (!users || users.length === 0) {
           console.log('No users found')
           return
@@ -30,23 +30,27 @@ function usersCommand() {
           )
         })
       } catch (error) {
-        console.error('error', error.message)
-        process.exitCode = 1
+        fail(error, { json: options.json })
       }
-    })
+    },
+  )
 
-  command
-    .command('get <userId>')
-    .description('get raw JSON for one user')
-    .action(async userId => {
-      try {
-        const user = await api.get(`/api/users/${userId}`)
+  withJson(
+    command.command('get <userId>').description('get raw JSON for one user'),
+  ).action(async (userId, options) => {
+    try {
+      const user = await api.get(`/api/users/${userId}`)
+
+      if (options.json) {
         printJson(user)
-      } catch (error) {
-        console.error('error', error.message)
-        process.exitCode = 1
+        return
       }
-    })
+
+      printInspect(user)
+    } catch (error) {
+      fail(error, { json: options.json })
+    }
+  })
 
   return command
 }

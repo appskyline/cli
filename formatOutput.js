@@ -1,17 +1,16 @@
 /* Copyright 2013 - 2024 Waiterio LLC */
 const { inspect } = require('node:util')
 
-function formatJson(value) {
+// Human-facing pretty-printer for reading documents in a terminal (colored,
+// unquoted keys). The machine-readable counterpart is the `--json` flag on
+// every subcommand, which prints real JSON via @monorepool/agentfirst's
+// printJson — never this.
+function formatInspect(value) {
   return inspect(value, { colors: true, depth: null })
 }
 
-function printJson(value) {
-  console.log(formatJson(value))
+function printInspect(value) {
+  console.log(formatInspect(value))
 }
 
-function printMissingAuth() {
-  console.error('Not logged in. Run `appskyline login` first.')
-  process.exitCode = 1
-}
-
-module.exports = { formatJson, printJson, printMissingAuth }
+module.exports = { formatInspect, printInspect }

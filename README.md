@@ -34,13 +34,40 @@ Found 2 app(s):
 
 ## Authentication
 
-`appskyline login` starts a temporary localhost server, opens your browser to
-app.appskyline.com, and receives the session tokens on the redirect back. If
-the browser does not open, the login URL is printed so you can visit it by
-hand. Tokens are stored in `~/.appskyline/` and refreshed automatically when
-they expire; `appskyline logout` clears them. A `401` error ending with
-"Not logged in?" means there is no valid session — run `appskyline login` and
-retry.
+Two ways in; both persist in `~/.appskyline/`:
+
+- **Browser** — `appskyline login --browser` (or pick it in the interactive
+  `appskyline login` chooser) starts a temporary localhost server, opens your
+  browser to app.appskyline.com, and receives the session tokens on the
+  redirect back. If the browser does not open, the login URL is printed so
+  you can visit it by hand. Tokens are refreshed automatically when they
+  expire.
+- **API key** — `appskyline login --with-key` prompts (masked) for an API key
+  secret, verifies it with one authenticated request, and stores it. Or skip
+  login entirely and export `APPSKYLINE_API_KEY=<key secret>` — ideal for CI
+  and headless agents. Create keys per app in the AppSkyline web UI; new keys
+  default to read-only scopes. The secret is never accepted as a command
+  argument.
+
+Precedence at request time: a stored browser session wins over a stored key,
+which wins over the `APPSKYLINE_API_KEY` environment variable.
+
+`appskyline logout` clears the stored session and any stored key (an
+environment key stays in effect — the CLI tells you so). Without a terminal
+and without credentials, commands fail fast with exit code 1 and instructions
+on stderr; the CLI never opens a browser headlessly. A `401` error ending
+with "Not logged in?" means there is no valid credential — run
+`appskyline login` (or set `APPSKYLINE_API_KEY`) and retry.
+
+## JSON output and errors
+
+Every data subcommand accepts `--json` and then prints real, parseable JSON
+on stdout — no colors, no ANSI escapes. Without the flag, output is
+formatted for human reading. Mutations under `--json` print a small result
+object such as `{ "ok": true, "id": "…" }`. Errors always go to stderr with
+exit code 1; in `--json` mode the error is a single JSON line
+(`{"error":{"message":"…","status":401}}`), so stdout stays parseable either
+way.
 
 ## Commands
 
@@ -50,8 +77,10 @@ Wherever a store is named, four values are accepted:
 ### Session
 
 ```bash
-appskyline login    # log in via browser; tokens land in ~/.appskyline/
-appskyline logout   # clear the stored session
+appskyline login               # interactive: choose browser or API key
+appskyline login --browser     # log in via browser; tokens land in ~/.appskyline/
+appskyline login --with-key    # masked prompt for an API key secret
+appskyline logout              # clear the stored session and any stored key
 ```
 
 ### Apps
@@ -173,6 +202,16 @@ appskyline skills list             # names and descriptions of the bundled agent
 appskyline skills get appskyline   # print a bundled SKILL.md to stdout
 ```
 
+### Schema
+
+```bash
+appskyline schema                  # the full command tree as JSON (options, arguments, subcommands)
+appskyline schema keywords list    # describe one command path only
+```
+
+Agents can discover every command, flag, and argument from `schema` instead
+of scraping help text.
+
 ## Keyword volume
 
 `keywords overview` returns monthly search volume, CPC, competition, and
@@ -223,7 +262,8 @@ and `keywords translate`:
 
 `APPSKYLINE_API_URL` overrides the API endpoint (default
 `https://api.appskyline.com`) — only needed against a non-production
-deployment.
+deployment. `APPSKYLINE_API_KEY` supplies an API key secret for headless
+authentication (see Authentication above).
 
 ## Usage with AI agents
 
@@ -252,8 +292,9 @@ Use the `appskyline` CLI for ASO data: app rankings, keyword research, live
 store searches, and listing metadata across the iOS App Store, macOS App
 Store, Google Play, and Microsoft Store. Run
 `npx appskyline skills get appskyline` for the full guide, and
-`appskyline --help` for the command reference. Log in once with
-`appskyline login`.
+`appskyline schema` for the machine-readable command reference. Log in once
+with `appskyline login`, or export `APPSKYLINE_API_KEY` for headless use.
+Pass `--json` for parseable output.
 ```
 
 Prefer a connector? The AppSkyline MCP server at

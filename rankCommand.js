@@ -1,5 +1,6 @@
 /* Copyright 2013 - 2024 Waiterio LLC */
 const commander = require('commander')
+const { withJson, printJson, fail } = require('@monorepool/agentfirst/output.js')
 const api = require('./request.js')
 
 const STORE_PATHS = {
@@ -42,54 +43,69 @@ function rankCommand() {
     .option('--country <country>', 'country code (e.g. US, IT)')
     .option('--lang <lang>', 'language code (e.g. en, it)')
     .option('-n, --num <num>', 'how deep to search', '25')
-    .action(async (appId, options) => {
-      try {
-        const searchPath = STORE_PATHS[options.store]
-        if (!searchPath) {
-          console.error(
+
+  withJson(command).action(async (appId, options) => {
+    try {
+      const searchPath = STORE_PATHS[options.store]
+      if (!searchPath) {
+        fail(
+          new Error(
             `--store must be one of: ${Object.keys(STORE_PATHS).join(', ')}`,
-          )
-          process.exitCode = 1
-          return
-        }
-
-        const params = new URLSearchParams({
-          term: options.term,
-          num: options.num,
-        })
-        if (options.country) params.set('country', options.country)
-        if (options.lang) params.set('lang', options.lang)
-
-        const results = await api.get(`${searchPath}?${params}`)
-
-        if (!results || results.length === 0) {
-          console.log(`No results for "${options.term}"`)
-          return
-        }
-
-        const position = results.findIndex(r => matchesApp(r, appId))
-
-        if (position === -1) {
-          console.log(
-            `${appId} is not in the top ${results.length} results for "${options.term}" on ${options.store}${
-              options.country ? ` (${options.country})` : ''
-            }`,
-          )
-          return
-        }
-
-        const winner = results[position]
-        const title = winner.title || winner.name || appId
-        console.log(
-          `✓ ${appId} ranks #${position + 1} of ${results.length} for "${options.term}" on ${options.store}${
-            options.country ? ` (${options.country})` : ''
-          }  (${title})`,
+          ),
+          { json: options.json },
         )
-      } catch (error) {
-        console.error('error', error.message)
-        process.exitCode = 1
+        return
       }
-    })
+
+      const params = new URLSearchParams({
+        term: options.term,
+        num: options.num,
+      })
+      if (options.country) params.set('country', options.country)
+      if (options.lang) params.set('lang', options.lang)
+
+      const results = (await api.get(`${searchPath}?${params}`)) || []
+      const position = results.findIndex(r => matchesApp(r, appId))
+
+      if (options.json) {
+        printJson({
+          appId,
+          store: options.store,
+          term: options.term,
+          country: options.country,
+          lang: options.lang,
+          position: position === -1 ? null : position + 1,
+          scanned: results.length,
+          app: position === -1 ? null : results[position],
+        })
+        return
+      }
+
+      if (results.length === 0) {
+        console.log(`No results for "${options.term}"`)
+        return
+      }
+
+      if (position === -1) {
+        console.log(
+          `${appId} is not in the top ${results.length} results for "${options.term}" on ${options.store}${
+            options.country ? ` (${options.country})` : ''
+          }`,
+        )
+        return
+      }
+
+      const winner = results[position]
+      const title = winner.title || winner.name || appId
+      console.log(
+        `✓ ${appId} ranks #${position + 1} of ${results.length} for "${options.term}" on ${options.store}${
+          options.country ? ` (${options.country})` : ''
+        }  (${title})`,
+      )
+    } catch (error) {
+      fail(error, { json: options.json })
+    }
+  })
 
   return command
 }
