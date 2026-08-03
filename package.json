@@ -1,12 +1,11 @@
 {
   "name": "appskyline",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": false,
   "description": "App Store Optimization CLI — app rankings, keyword research, and store-listing metadata across the iOS App Store, macOS App Store, Google Play, and Microsoft Store",
   "license": "Apache-2.0",
   "repository": "github:appskyline/cli",
   "homepage": "https://www.appskyline.com/developers/",
-  "bugs": "https://github.com/appskyline/cli/issues",
   "author": "Appskyline",
   "type": "commonjs",
   "main": "./dist/index.js",
@@ -43,7 +42,6 @@
     "node-localstorage": "2.2.1"
   },
   "devDependencies": {
-    "@monorepool/shell": "0.0.0",
     "esbuild": "0.25.4",
     "eslint": "10.8.0"
   }
