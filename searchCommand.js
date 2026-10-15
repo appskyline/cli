@@ -1,7 +1,9 @@
 /* Copyright 2013 - 2024 Waiterio LLC */
-const commander = require('commander')
-const { withJson, printJson, fail } = require('@monorepool/agentfirst/output.js')
-const api = require('./request.js')
+
+import { fail, printJson, withJson } from '@monorepool/agentfirst/output.js'
+import * as commander from 'commander'
+
+import api from './request.js'
 
 const STORE_PATHS = {
   'ios-app-store': '/api/ios-app-store/search',
@@ -68,4 +70,4 @@ function searchCommand() {
   return command
 }
 
-module.exports = searchCommand
+export default searchCommand

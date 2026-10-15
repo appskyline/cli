@@ -1,7 +1,8 @@
 /* Copyright 2013 - 2024 Waiterio LLC */
-const createRequest = require('@monorepool/agentfirst/request.js')
-const getApiUrl = require('./getApiUrl.js')
-const session = require('./session.js')
+import createRequest from '@monorepool/agentfirst/request.js'
+
+import getApiUrl from './getApiUrl.js'
+import session from './session.js'
 
 // Dual-mode transport from @monorepool/agentfirst:
 //
@@ -14,7 +15,7 @@ const session = require('./session.js')
 // Precedence: stored browser session > stored key > APPSKYLINE_API_KEY.
 // Errors carry `.status` and `.body`, and terminal 401/403s append the
 // login hint naming both `appskyline login` and the environment variable.
-module.exports = createRequest({
+export default createRequest({
   getApiUrl,
   session,
   envKeyName: 'APPSKYLINE_API_KEY',

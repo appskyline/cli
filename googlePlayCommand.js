@@ -1,12 +1,16 @@
 /* Copyright 2013 - 2024 Waiterio LLC */
-const commander = require('commander')
-const { withJson, printJson, fail } = require('@monorepool/agentfirst/output.js')
-const api = require('./request.js')
-const { printInspect } = require('./formatOutput.js')
+
+import { fail, printJson, withJson } from '@monorepool/agentfirst/output.js'
+import * as commander from 'commander'
+
+import { printInspect } from './formatOutput.js'
+import googlePlayPublishingCommands from './googlePlayPublishingCommands.js'
+import api from './request.js'
 
 function googlePlayCommand() {
   const command = new commander.Command('google-play')
-  command.description('Google Play Store queries')
+  command.description('Google Play Store queries and publishing')
+  googlePlayPublishingCommands(command)
 
   withJson(
     command
@@ -19,8 +23,12 @@ function googlePlayCommand() {
   ).action(async (appId, options) => {
     try {
       const params = new URLSearchParams()
-      if (options.country) params.set('country', options.country)
-      if (options.lang) params.set('lang', options.lang)
+      if (options.country) {
+        params.set('country', options.country)
+      }
+      if (options.lang) {
+        params.set('lang', options.lang)
+      }
       const qs = params.toString() ? `?${params}` : ''
       const app = await api.get(`/api/google-play/apps/${appId}${qs}`)
 
@@ -55,10 +63,18 @@ function googlePlayCommand() {
   ).action(async (appId, options) => {
     try {
       const params = new URLSearchParams()
-      if (options.max) params.set('maxResults', options.max)
-      if (options.token) params.set('token', options.token)
-      if (options.translationLanguage) params.set('translationLanguage', options.translationLanguage)
-      if (options.startIndex) params.set('startIndex', options.startIndex)
+      if (options.max) {
+        params.set('maxResults', options.max)
+      }
+      if (options.token) {
+        params.set('token', options.token)
+      }
+      if (options.translationLanguage) {
+        params.set('translationLanguage', options.translationLanguage)
+      }
+      if (options.startIndex) {
+        params.set('startIndex', options.startIndex)
+      }
       const qs = params.toString() ? `?${params}` : ''
       const result = await api.get(
         `/api/apps/${appId}/google-play/reviews${qs}`,
@@ -99,9 +115,15 @@ function googlePlayCommand() {
   ).action(async (appId, options) => {
     try {
       const params = new URLSearchParams()
-      if (options.month) params.set('yearMonth', options.month)
-      if (options.dimension) params.set('dimension', options.dimension)
-      if (options.developerAccountId) params.set('developerAccountId', options.developerAccountId)
+      if (options.month) {
+        params.set('yearMonth', options.month)
+      }
+      if (options.dimension) {
+        params.set('dimension', options.dimension)
+      }
+      if (options.developerAccountId) {
+        params.set('developerAccountId', options.developerAccountId)
+      }
       const qs = params.toString() ? `?${params}` : ''
       const result = await api.get(
         `/api/apps/${appId}/google-play/reports/installs${qs}`,
@@ -121,4 +143,4 @@ function googlePlayCommand() {
   return command
 }
 
-module.exports = googlePlayCommand
+export default googlePlayCommand

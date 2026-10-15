@@ -1,9 +1,11 @@
 /* Copyright 2013 - 2024 Waiterio LLC */
-const commander = require('commander')
-const { withJson, printJson, fail } = require('@monorepool/agentfirst/output.js')
-const api = require('./request.js')
-const getConfig = require('./getConfig.js')
-const { printInspect } = require('./formatOutput.js')
+
+import { fail, printJson, withJson } from '@monorepool/agentfirst/output.js'
+import * as commander from 'commander'
+
+import { printInspect } from './formatOutput.js'
+import getConfig from './getConfig.js'
+import api from './request.js'
 
 function keywordsCommand() {
   const command = new commander.Command('keywords')
@@ -257,4 +259,4 @@ function keywordsCommand() {
   return command
 }
 
-module.exports = keywordsCommand
+export default keywordsCommand

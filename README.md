@@ -51,7 +51,7 @@ prompt. If the address already has an account, the error says so — run
 
 ## Authentication
 
-Two ways in; both persist in `~/.appskyline/`:
+Three ways in; all persist in `~/.appskyline/`:
 
 - **Browser** — `appskyline login --browser` (or pick it in the interactive
   `appskyline login` chooser) starts a temporary localhost server, opens your
@@ -59,6 +59,16 @@ Two ways in; both persist in `~/.appskyline/`:
   redirect back. If the browser does not open, the login URL is printed so
   you can visit it by hand. Tokens are refreshed automatically when they
   expire.
+- **Another device** — `appskyline login --device` is for a terminal whose
+  browser you cannot use: a remote desktop without copy and paste, an SSH
+  session, a server. It prints a link, a QR code and a one-time code such as
+  `WDJB-MJHT`. Scan the QR code with your phone, or open
+  app.appskyline.com/cli on any device where you are signed in to AppSkyline
+  and type the code; check that it matches the terminal and approve. The
+  terminal logs itself in within a couple of seconds and stores a session like
+  the browser login. The code works once and expires after ten minutes.
+  `--browser` prints the same code beside its link, so a browser that opens on
+  the wrong machine is no dead end.
 - **API key** — `appskyline login --with-key` prompts (masked) for an API key
   secret, verifies it with one authenticated request, and stores it. Or skip
   login entirely and export `APPSKYLINE_API_KEY=<key secret>` — ideal for CI
@@ -72,7 +82,9 @@ which wins over the `APPSKYLINE_API_KEY` environment variable.
 `appskyline logout` clears the stored session and any stored key (an
 environment key stays in effect — the CLI tells you so). Without a terminal
 and without credentials, commands fail fast with exit code 1 and instructions
-on stderr; the CLI never opens a browser headlessly. A `401` error ending
+on stderr; the CLI never opens a browser headlessly, though
+`appskyline login --device` works there: it prints the link and the code and
+waits for someone to approve them. A `401` error ending
 with "Not logged in?" means there is no valid credential — run
 `appskyline login` (or set `APPSKYLINE_API_KEY`) and retry.
 
@@ -95,8 +107,9 @@ Wherever a store is named, four values are accepted:
 
 ```bash
 appskyline signup --email you@example.com   # create an account and log in
-appskyline login               # interactive: choose browser or API key
+appskyline login               # interactive: browser, another device or API key
 appskyline login --browser     # log in via browser; tokens land in ~/.appskyline/
+appskyline login --device      # approve from a phone or another computer
 appskyline login --with-key    # masked prompt for an API key secret
 appskyline logout              # clear the stored session and any stored key
 ```
@@ -323,3 +336,83 @@ ChatGPT, and any MCP-capable host — see
 ## License
 
 [Apache-2.0](LICENSE)
+
+## Google Play publishing
+
+Use your **AppSkyline app ID**, not the Android package name. Configure the app's
+Google Play service account in AppSkyline first. Its package name takes precedence
+over the tracked app's package. The service account needs Google Play permissions
+for the target app/track. AppSkyline API keys need `releases:read` for reads/plans
+and `releases:write` for edits, uploads, submission, and rollout changes. Session
+writes require an organization administrator. Legacy unscoped keys retain their
+existing full-access behavior.
+
+```bash
+appskyline google-play credentials check APP_ID --json
+appskyline google-play releases list APP_ID --track production --json
+appskyline google-play release plan APP_ID --track internal --version-code 42 --json
+appskyline google-play edits create APP_ID --json
+# Use the returned id as EDIT_ID. Build/sign the AAB with your Android build tools.
+appskyline google-play release upload APP_ID --edit EDIT_ID --aab app-release.aab --json
+appskyline google-play release stage APP_ID --edit EDIT_ID --track internal --version-code 42 --json
+appskyline google-play edits validate APP_ID --edit EDIT_ID --json
+appskyline google-play edits commit APP_ID --edit EDIT_ID --json
+appskyline google-play releases watch APP_ID --track internal --version-code 42 --interval 30 --timeout 1800 --json
+```
+
+`appskyline google-play release submit` combines stage, validate, and commit, using the same flags as
+`release stage`. Staging **replaces all releases on the selected track**; include
+all version codes you intend to retain. `release plan` previews this replacement
+without creating an edit. Use `--status inProgress --fraction 0.1` for a staged
+rollout, or `--status draft` to keep a release as a draft. Optional `--name` and
+`--notes notes.json` accept a name and an array of `{ "language": "en-US",
+"text": "Release notes" }` respectively.
+
+```bash
+appskyline google-play edits get APP_ID --edit EDIT_ID --json
+appskyline google-play edits bundles APP_ID --edit EDIT_ID --json
+appskyline google-play edits discard APP_ID --edit EDIT_ID --json
+appskyline google-play rollout set APP_ID --track production --version-code 42 --fraction 0.5 --json
+appskyline google-play rollout halt APP_ID --track production --version-code 42 --json
+appskyline google-play metadata list APP_ID --edit EDIT_ID --json
+appskyline google-play metadata upload APP_ID --edit EDIT_ID --file listings.json --json
+appskyline google-play data-safety upload APP_ID --file data-safety.csv --json
+```
+
+`rollout set` and `rollout halt` create and commit an edit, preserving the other
+releases on that track; fraction `1` completes the rollout. Creating an edit can
+invalidate an earlier edit owned by the same service account. Coordinate jobs
+per app, retain the edit ID, and inspect it after errors rather than starting a
+second submission blindly. Bundle uploads go directly to Google's resumable
+upload session; OAuth credentials remain on the server. Interrupted requests
+recover within that command; after a process exits, inspect `edits bundles`
+before retrying. The upload session URL is secret and is not printed by the CLI.
+
+Listing JSON is `{ "locales": [{ "language": "en-US", "title": "My app",
+"shortDescription": "Short description", "fullDescription": "Full description" }] }`.
+The optional `video` property accepts Google's listing video URL. Listing text
+is staged until commit; image/screenshot uploads are not included. Data safety
+uses Google's CSV format, writes directly outside an edit, and does not certify
+that the declaration is approved.
+
+A successful commit is **not proof of publication**. Commits use
+`ERROR_IF_IN_REVIEW`, validate first, and never automatically retry with different
+review settings. If Google requires Console submission after rejection, use
+`edits commit --defer-review` or `release submit --defer-review` explicitly, then
+submit in Play Console. Managed publishing may also require a Console action.
+
+`releases watch` watches only the requested version. JSON stdout contains the
+final `outcome`: `published`, `rejected`, `console-required`, or `timeout`.
+All except `published` exit nonzero. Published means available on the track,
+including partial or halted rollouts, not necessarily available to every user.
+API failures produce JSON stderr with Google error details where supplied and
+the edit ID when applicable. Policy rejection explanations remain unavailable
+through the public API; `rejectionDetails.available` is false, not an empty
+claim that the app has no policy issues. Credential checks verify read access
+only, without attempting a write.
+
+The matching REST endpoints live under `/api/apps/{appId}/google-play`; see the
+API's OpenAPI reference for request schemas. Official references:
+[release lifecycle](https://developers.google.com/android-publisher/api-ref/rest/v3/applications.tracks.releases),
+[edit commit](https://developers.google.com/android-publisher/api-ref/rest/v3/edits/commit),
+[resumable upload](https://developers.google.com/android-publisher/upload).

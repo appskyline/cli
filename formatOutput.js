@@ -1,5 +1,5 @@
 /* Copyright 2013 - 2024 Waiterio LLC */
-const { inspect } = require('node:util')
+import { inspect } from 'node:util'
 
 // Human-facing pretty-printer for reading documents in a terminal (colored,
 // unquoted keys). The machine-readable counterpart is the `--json` flag on
@@ -13,4 +13,4 @@ function printInspect(value) {
   console.log(formatInspect(value))
 }
 
-module.exports = { formatInspect, printInspect }
+export { formatInspect, printInspect }

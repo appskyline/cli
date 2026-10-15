@@ -1,10 +1,17 @@
 /* Copyright 2013 - 2024 Waiterio LLC */
-const esbuild = require('esbuild')
-const path = require('path')
-const fs = require('fs')
-const packageJson = require('../package.json')
 
-const distDir = path.resolve(__dirname, '../dist')
+import fs from 'node:fs'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
+
+import { build } from 'esbuild'
+
+const scriptsDirectory = fileURLToPath(new URL('.', import.meta.url))
+const packageJson = JSON.parse(
+  fs.readFileSync(new URL('../package.json', import.meta.url), 'utf8'),
+)
+
+const distDir = path.resolve(scriptsDirectory, '../dist')
 
 if (fs.existsSync(distDir)) {
   fs.rmSync(distDir, { recursive: true })
@@ -13,18 +20,17 @@ fs.mkdirSync(distDir, { recursive: true })
 
 const external = Object.keys(packageJson.dependencies || {})
 
-esbuild
-  .build({
-    entryPoints: [path.resolve(__dirname, '../index.js')],
-    bundle: true,
-    platform: 'node',
-    target: 'node18',
-    outfile: path.resolve(distDir, 'index.js'),
-    format: 'cjs',
-    external,
-    minify: false,
-    sourcemap: false,
-  })
+build({
+  entryPoints: [path.resolve(scriptsDirectory, '../index.js')],
+  bundle: true,
+  platform: 'node',
+  target: 'node18',
+  outfile: path.resolve(distDir, 'index.js'),
+  format: 'esm',
+  external,
+  minify: false,
+  sourcemap: false,
+})
   .then(() => {
     fs.chmodSync(path.resolve(distDir, 'index.js'), 0o755)
 
@@ -35,9 +41,9 @@ esbuild
     // The canonical source only exists inside the waiterio monorepo — builds
     // from the public github.com/appskyline/cli mirror skip the copy and keep
     // whatever skills/ they already have.
-    const skillsDir = path.resolve(__dirname, '../skills')
+    const skillsDir = path.resolve(scriptsDirectory, '../skills')
     const canonicalSkillsDir = path.resolve(
-      __dirname,
+      scriptsDirectory,
       '../../skills/public/skills',
     )
     if (fs.existsSync(canonicalSkillsDir)) {

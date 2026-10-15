@@ -1,7 +1,8 @@
 /* Copyright 2013 - 2024 Waiterio LLC */
-const agentfirstSignupCommand = require('@monorepool/agentfirst/signupCommand.js')
-const getApiUrl = require('./getApiUrl.js')
-const session = require('./session.js')
+import agentfirstSignupCommand from '@monorepool/agentfirst/signupCommand.js'
+
+import getApiUrl from './getApiUrl.js'
+import session from './session.js'
 
 // The step that used to need a person. `login` assumes the account exists;
 // an agent pointed at appskyline.com for the first time has no account to
@@ -25,4 +26,4 @@ function signupCommand() {
   })
 }
 
-module.exports = signupCommand
+export default signupCommand

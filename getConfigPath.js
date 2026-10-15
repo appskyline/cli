@@ -1,9 +1,9 @@
 /* Copyright 2013 - 2024 Waiterio LLC */
-const fs = require('node:fs')
-const path = require('node:path')
+import fs from 'node:fs'
+import path from 'node:path'
 
 // Walks up from the current working directory looking for appskyline.json.
-module.exports = function getConfigPath() {
+export default function getConfigPath() {
   let dir = process.cwd()
   for (let i = 0; i < 10; i += 1) {
     const candidate = path.join(dir, 'appskyline.json')

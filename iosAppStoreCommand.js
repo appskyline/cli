@@ -1,10 +1,12 @@
 /* Copyright 2013 - 2024 Waiterio LLC */
-const fs = require('node:fs')
-const path = require('node:path')
-const commander = require('commander')
-const { withJson, printJson, fail } = require('@monorepool/agentfirst/output.js')
-const api = require('./request.js')
-const { printInspect } = require('./formatOutput.js')
+import fs from 'node:fs'
+import path from 'node:path'
+
+import { fail, printJson, withJson } from '@monorepool/agentfirst/output.js'
+import * as commander from 'commander'
+
+import { printInspect } from './formatOutput.js'
+import api from './request.js'
 
 const FASTLANE_FILE_TO_FIELD = {
   'name.txt': 'name',
@@ -94,9 +96,7 @@ function iosAppStoreCommand() {
     try {
       const params = new URLSearchParams({ id: options.id })
       if (options.country) params.set('country', options.country)
-      const results = await api.get(
-        `/api/ios-app-store/app/searches?${params}`,
-      )
+      const results = await api.get(`/api/ios-app-store/app/searches?${params}`)
 
       if (options.json) {
         printJson(results)
@@ -324,4 +324,4 @@ function iosAppStoreCommand() {
   return command
 }
 
-module.exports = iosAppStoreCommand
+export default iosAppStoreCommand

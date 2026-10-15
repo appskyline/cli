@@ -1,8 +1,10 @@
 /* Copyright 2013 - 2024 Waiterio LLC */
-const commander = require('commander')
-const { withJson, printJson, fail } = require('@monorepool/agentfirst/output.js')
-const api = require('./request.js')
-const { printInspect } = require('./formatOutput.js')
+
+import { fail, printJson, withJson } from '@monorepool/agentfirst/output.js'
+import * as commander from 'commander'
+
+import { printInspect } from './formatOutput.js'
+import api from './request.js'
 
 function appsCommand() {
   const command = new commander.Command('apps')
@@ -81,12 +83,24 @@ function appsCommand() {
       console.log(bold(app.name || app._id))
       console.log(dim(app._id))
       console.log()
-      if (app.platform) console.log(`${cyan('platform')}  ${app.platform}`)
-      if (app.bundleId) console.log(`${cyan('bundleId')}  ${app.bundleId}`)
-      if (app.appStoreId) console.log(`${cyan('appStoreId')}  ${app.appStoreId}`)
-      if (app.googlePlayId) console.log(`${cyan('googlePlayId')}  ${app.googlePlayId}`)
-      if (app.microsoftStoreId) console.log(`${cyan('microsoftStoreId')}  ${app.microsoftStoreId}`)
-      if (app.creationTime) console.log(`${cyan('created')}  ${app.creationTime}`)
+      if (app.platform) {
+        console.log(`${cyan('platform')}  ${app.platform}`)
+      }
+      if (app.bundleId) {
+        console.log(`${cyan('bundleId')}  ${app.bundleId}`)
+      }
+      if (app.appStoreId) {
+        console.log(`${cyan('appStoreId')}  ${app.appStoreId}`)
+      }
+      if (app.googlePlayId) {
+        console.log(`${cyan('googlePlayId')}  ${app.googlePlayId}`)
+      }
+      if (app.microsoftStoreId) {
+        console.log(`${cyan('microsoftStoreId')}  ${app.microsoftStoreId}`)
+      }
+      if (app.creationTime) {
+        console.log(`${cyan('created')}  ${app.creationTime}`)
+      }
       console.log()
     } catch (error) {
       fail(error, { json: options.json })
@@ -96,4 +110,4 @@ function appsCommand() {
   return command
 }
 
-module.exports = appsCommand
+export default appsCommand

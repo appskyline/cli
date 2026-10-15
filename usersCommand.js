@@ -1,8 +1,10 @@
 /* Copyright 2013 - 2024 Waiterio LLC */
-const commander = require('commander')
-const { withJson, printJson, fail } = require('@monorepool/agentfirst/output.js')
-const api = require('./request.js')
-const { printInspect } = require('./formatOutput.js')
+
+import { fail, printJson, withJson } from '@monorepool/agentfirst/output.js'
+import * as commander from 'commander'
+
+import { printInspect } from './formatOutput.js'
+import api from './request.js'
 
 function usersCommand() {
   const command = new commander.Command('users')
@@ -55,4 +57,4 @@ function usersCommand() {
   return command
 }
 
-module.exports = usersCommand
+export default usersCommand
