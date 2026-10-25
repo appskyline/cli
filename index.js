@@ -21,6 +21,7 @@ import microsoftStoreCommand from './microsoftStoreCommand.js'
 import packageJson from './package.json' with { type: 'json' }
 import rankCommand from './rankCommand.js'
 import api from './request.js'
+import reviewStatusCommand from './reviewStatusCommand.js'
 import rolesCommand from './rolesCommand.js'
 import searchCommand from './searchCommand.js'
 import session from './session.js'
@@ -78,6 +79,7 @@ program
     }),
   )
   .addCommand(appsCommand())
+  .addCommand(reviewStatusCommand())
   .addCommand(keywordsCommand())
   .addCommand(usersCommand())
   .addCommand(rolesCommand())
