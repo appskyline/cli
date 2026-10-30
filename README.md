@@ -160,6 +160,25 @@ appskyline rank com.example.app --store google-play --term "crm" --country US -n
 Play package name, or Microsoft Store product id); matching is
 case-insensitive. `-n/--num` sets how deep to search (default 25).
 
+### Metadata suggestions
+
+```bash
+appskyline metadata suggest                       # every app, each in its main market
+appskyline metadata suggest <appId> --store ios-app-store --country ES
+appskyline metadata suggest <appId> --store ios-app-store --country ES \
+  --subtitle "Baraja española con amigos" --keywords "cartas,españolas,juego"
+```
+
+Compares each store listing with the app's tracked keywords in one market and
+drafts the fields the store indexes: the App Store app name, subtitle and
+keyword field, the Google Play title and the phrases its short description
+should mention, and Microsoft Store search terms. Each tracked keyword shows
+where the listing covers it, its latest stored rank and cached demand. Pass
+`--title`, `--subtitle`, `--keywords` or `--short-description` to check your
+own wording; `--refresh-demand` refreshes stale demand and may spend
+DataForSEO credits. `--json` returns the full result. Nothing is written to
+any store.
+
 ### iOS App Store
 
 ```bash

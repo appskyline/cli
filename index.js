@@ -17,6 +17,7 @@ import invitesCommand from './invitesCommand.js'
 import iosAppStoreCommand from './iosAppStoreCommand.js'
 import keywordsCommand from './keywordsCommand.js'
 import macosAppStoreCommand from './macosAppStoreCommand.js'
+import metadataCommand from './metadataCommand.js'
 import microsoftStoreCommand from './microsoftStoreCommand.js'
 import packageJson from './package.json' with { type: 'json' }
 import rankCommand from './rankCommand.js'
@@ -91,6 +92,7 @@ program
   .addCommand(googlePlayCommand())
   .addCommand(microsoftStoreCommand())
   .addCommand(rankCommand())
+  .addCommand(metadataCommand())
   .addCommand(skillsCommand({ baseDirectory: cliDirectory }))
   .addCommand(schemaCommand({ program }))
 
